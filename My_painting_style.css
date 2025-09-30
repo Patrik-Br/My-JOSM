@@ -189,19 +189,14 @@ way[zonesante]{
 }
 /* Showing ways in custom colour*/
 way[colour]{
-    text-color: #fcc;
-    text-halo-color: #000;
-    text-halo-radius: 2;
-    font-size: 15px;
-    font-weight: bold;
     fill-color: tag("colour"); 
     fill-opacity: 15%;
 }
 /* Showing nodes in custom colour*/
 node[colour] {
-    symbol-shape: square;          /* draw a symbol so there’s something to color */
+    symbol-shape: square;          /* draw a symbol so there is something to color */
     symbol-size: 7;
     symbol-fill-color: tag("colour");
-    symbol-stroke-color: #000;     /* optional outline */
+   /* symbol-stroke-color: #000;      optional outline but then you don't see selection*/
     symbol-stroke-width: 1;
 }
