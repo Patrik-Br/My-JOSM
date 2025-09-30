@@ -25,10 +25,21 @@ area|z16-[taskStatus][taskId]     { font-size: 18; text-halo-radius: 3; }
 
 /* Taskgrid width for better visibility*/
 *[taskId] {
-    width: 7;
+    width: 5;
 }
 
+/* Visibility of mapping status - file for projects overview*/
+way[status=Complete]{
+    color: #09c738; 
+    width: 2;    
+    fill-color: #09c738;  fill-opacity: 20%;}
+way[status=Ongoing]{
+    color: #13b5ca; 
+    width: 2;    
+    fill-color: #13b5ca;  fill-opacity: 20%;}
+
 /* Building mapped as node for better visibility*/
+/* I am using Dan's paint style instead, it's better
 node[building]{
     text: tag("building");
     text-color: #fcc;
@@ -37,10 +48,19 @@ node[building]{
     font-size: 15px;
     font-weight: bold;
 }
+    */
+
+/* Setting to change colour of buildings */
+setting::colordisplay {
+  type: color;
+  label: tr("Color used for displaying buildings");
+  default: green;
+}
+
 
 /* Building color*/
 way[building]{
-    color: #00c0b0;
+    color: setting("colordisplay");
     width: 2;     /* Didn't worked without changing the width */
 } 
 
@@ -138,8 +158,50 @@ way[destroyed:building=yes] {
 /* Highlighting end of highway*/
 way[highway]!:closed >[index=1] node|z15-!:connection!:tagged,
 way[highway]!:closed >[index=-1] node|z15-!:connection!:tagged{ 
-     icon-image: "https://raw.githubusercontent.com/Patrik-Br/MyPaintStyle/main/icons/unconnected%20way.png";
+    icon-image: "https://raw.githubusercontent.com/Patrik-Br/MyPaintStyle/main/icons/unconnected%20way.png";
     icon-height: 30;
     icon-offset: 8;
     z-index: -3;
+}
+
+
+/* Showing name of ADMIN border*/
+way[shapeName]{
+    text: tag("shapeName");
+    text-color: #fcc;
+    text-halo-color: #000;
+    text-halo-radius: 2;
+    font-size: 15px;
+    font-weight: bold;
+    fill-color: white; 
+    fill-opacity: 1%;
+}
+/* Showing name of zonesante health border*/
+way[zonesante]{
+    text: tag("zonesante");
+    text-color: #fcc;
+    text-halo-color: #000;
+    text-halo-radius: 2;
+    font-size: 15px;
+    font-weight: bold;
+    fill-color: white; 
+    fill-opacity: 1%;
+}
+/* Showing ways in custom colour*/
+way[colour]{
+    text-color: #fcc;
+    text-halo-color: #000;
+    text-halo-radius: 2;
+    font-size: 15px;
+    font-weight: bold;
+    fill-color: tag("colour"); 
+    fill-opacity: 15%;
+}
+/* Showing nodes in custom colour*/
+node[colour] {
+    symbol-shape: square;          /* draw a symbol so there’s something to color */
+    symbol-size: 7;
+    symbol-fill-color: tag("colour");
+    symbol-stroke-color: #000;     /* optional outline */
+    symbol-stroke-width: 1;
 }
