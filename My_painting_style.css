@@ -200,3 +200,36 @@ node[colour] {
    /* symbol-stroke-color: #000;      optional outline but then you don't see selection*/
     symbol-stroke-width: 1;
 }
+
+
+/* Size of nodes made by Martien
+setting::building_node_width 
+{
+  type: double;
+  label: tr("Choose node width");
+  default: 10;
+}
+node
+{
+    symbol-shape: circle;
+    symbol-size: setting("building_node_width");
+}
+*/
+
+/* Showing text put as comment or note, I used this when importing place names from terrain*/
+*[comment]{
+    text: tag("comment");
+    text-color: #fcc;
+    text-halo-color: #000;
+    text-halo-radius: 2;
+    font-size: 15px;
+    font-weight: bold;
+}
+*[note]{
+    text: tag("note");
+    text-color: #fcc;
+    text-halo-color: #000;
+    text-halo-radius: 2;
+    font-size: 15px;
+    font-weight: bold;
+}
