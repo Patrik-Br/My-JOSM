@@ -15,13 +15,19 @@ way[taskStatus=INVALIDATED] { fill-color: yellow;  fill-opacity: 15%; }
 way[taskStatus=LOCKED_FOR_MAPPING] { fill-color: orange; fill-opacity: 15%; }
 way[taskStatus=LOCKED_FOR_VALIDATION] { fill-color: orange; fill-opacity: 15%; }
 
+/* Showing number of task in taskgrid */
+setting::show_task_ID {
+  type: boolean;
+  label: tr("Show task number in taskgrid");
+  default: true;
+}
 /* Annotate on the task IDs when the tasks are large enough on screen. */
-area|z11-[taskStatus && taskId && areasize() > 4000000] { text: "taskId"; }
-area|z13-[taskStatus && taskId && areasize() >  100000] { text: "taskId"; }
-area|z14-[taskStatus && taskId && areasize() >   50000] { text: "taskId"; }
-/* area|z16-[taskStatus && taskId                        ] { text: "taskId"; }*/
-area|z15-[taskStatus][taskId]     { font-size: 12; text-halo-radius: 2; }
-area|z16-[taskStatus][taskId]     { font-size: 18; text-halo-radius: 3; }
+area|z11-[taskStatus && taskId && areasize() > 4000000][setting("show_task_ID")] { text: "taskId"; }
+area|z13-[taskStatus && taskId && areasize() >  100000][setting("show_task_ID")] { text: "taskId"; }
+area|z14-[taskStatus && taskId && areasize() >   50000][setting("show_task_ID")] { text: "taskId"; }
+area|z16-[taskStatus && taskId                        ][setting("show_task_ID")] { text: "taskId"; }
+area|z15-[taskStatus][taskId][setting("show_task_ID")]     { font-size: 12; text-halo-radius: 2; }
+area|z16-[taskStatus][taskId][setting("show_task_ID")]     { font-size: 18; text-halo-radius: 3; }
 
 /* Taskgrid width for better visibility*/
 *[taskId] {
@@ -75,7 +81,7 @@ way[building][building!=yes]{
     fill-color: orange;
 }
 
-/* Building tagged as building = yes AND layer = x */
+/* Building with layer = x */
 way[building][building!=roof][layer]{
     text: This building has layer attribute;
     text-color: #fcc;
@@ -233,3 +239,55 @@ node
     font-size: 15px;
     font-weight: bold;
 }
+
+/* Two rules for validation damage assetments, they falsly tagged many buildings */ 
+way[destroyed:building]{
+    fill-color: yellow; 
+    fill-opacity: 30%;
+}
+
+way[damage]{
+    fill-color: yellow; 
+    fill-opacity: 30%;
+}
+
+/* Showing names of known validators on taskgrid of validated tasks */
+setting::show_validator {
+  type: boolean;
+  label: tr("Show validator name in taskgrid");
+  default: true;
+}
+/* I put names into tr("") because when I used simple text I had to put always two words separate by space */
+way[validatedBy=2916048][setting("show_validator")]{
+    text: tr("Norbert Dichter");
+}
+way[validatedBy=5438501][setting("show_validator")]{
+    text: tr("anthaas");
+}
+way[validatedBy=378610][setting("show_validator")]{
+    text: tr("Jorieke V");
+}
+way[validatedBy=1414812][setting("show_validator")]{
+    text: tr("RAytoun");
+}
+way[validatedBy=9621269][setting("show_validator")]{
+    text: tr("martien-176");
+}
+way[validatedBy=2249513][setting("show_validator")]{
+    text: tr("hebolz");
+}
+way[validatedBy=2278272][setting("show_validator")]{
+    text: tr("bluestarfish");
+}
+way[validatedBy=11880034][setting("show_validator")]{
+    text: tr("peculiar theater");
+}
+way[validatedBy=10478691][setting("show_validator")]{
+    text: tr("Patrik_B");
+}
+
+
+
+
+
+
