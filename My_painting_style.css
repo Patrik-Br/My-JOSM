@@ -257,34 +257,23 @@ setting::show_validator {
   label: tr("Show validator name in taskgrid");
   default: true;
 }
+
+/* Base style for all validated tasks */
+way[validatedBy][setting("show_validator")] {
+    font-size: 12px;
+    text-halo-radius: 2;
+}
+
 /* I put names into tr("") because when I used simple text I had to put always two words separate by space */
-way[validatedBy=2916048][setting("show_validator")]{
-    text: tr("Norbert Dichter");
-}
-way[validatedBy=5438501][setting("show_validator")]{
-    text: tr("anthaas");
-}
-way[validatedBy=378610][setting("show_validator")]{
-    text: tr("Jorieke V");
-}
-way[validatedBy=1414812][setting("show_validator")]{
-    text: tr("RAytoun");
-}
-way[validatedBy=9621269][setting("show_validator")]{
-    text: tr("martien-176");
-}
-way[validatedBy=2249513][setting("show_validator")]{
-    text: tr("hebolz");
-}
-way[validatedBy=2278272][setting("show_validator")]{
-    text: tr("bluestarfish");
-}
-way[validatedBy=11880034][setting("show_validator")]{
-    text: tr("peculiar theater");
-}
-way[validatedBy=10478691][setting("show_validator")]{
-    text: tr("Patrik_B");
-}
+way[validatedBy=2916048][setting("show_validator")]  { text: tr("Norbert Dichter"); }
+way[validatedBy=5438501][setting("show_validator")]  { text: tr("anthaas"); }
+way[validatedBy=378610][setting("show_validator")]   { text: tr("Jorieke V"); }
+way[validatedBy=1414812][setting("show_validator")]  { text: tr("RAytoun"); }
+way[validatedBy=9621269][setting("show_validator")]  { text: tr("martien-176"); }
+way[validatedBy=2249513][setting("show_validator")]  { text: tr("hebolz"); }
+way[validatedBy=2278272][setting("show_validator")]  { text: tr("bluestarfish"); }
+way[validatedBy=11880034][setting("show_validator")] { text: tr("peculiar theater"); }
+way[validatedBy=10478691][setting("show_validator")] { text: tr("Patrik_B"); }
 
 
 
