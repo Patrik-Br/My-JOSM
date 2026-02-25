@@ -196,16 +196,22 @@ way[zonesante]{
 /* Showing ways in custom colour*/
 way[colour]{
     fill-color: tag("colour"); 
-    fill-opacity: 15%;
 }
+
 /* Showing nodes in custom colour*/
 node[colour] {
-    symbol-shape: square;          /* draw a symbol so there is something to color */
+    symbol-shape: circle;          /* draw a symbol so there is something to color */
     symbol-size: 7;
     symbol-fill-color: tag("colour");
    /* symbol-stroke-color: #000;      optional outline but then you don't see selection*/
     symbol-stroke-width: 1;
 }
+
+/* way for me to visually mark objects. Also added to my personal validator rules so I won't upload */
+*[star]{
+    icon-image: "https://raw.githubusercontent.com/Patrik-Br/MyPaintStyle/main/icons/star.png";
+    icon-height: 20;
+} 
 
 
 /* Size of nodes made by Martien
@@ -274,9 +280,27 @@ way[validatedBy=2249513][setting("show_validator")]  { text: tr("hebolz"); }
 way[validatedBy=2278272][setting("show_validator")]  { text: tr("bluestarfish"); }
 way[validatedBy=11880034][setting("show_validator")] { text: tr("peculiar theater"); }
 way[validatedBy=10478691][setting("show_validator")] { text: tr("Patrik_B"); }
+way[validatedBy=8520420][setting("show_validator")] { text: tr("gnoye"); }
+way[validatedBy=4355439][setting("show_validator")] { text: tr("Libor Bednarik"); }
+way[validatedBy=8285929][setting("show_validator")] { text: tr("JohnW11"); }
+way[validatedBy=344974][setting("show_validator")] { text: tr("Lubosse"); }
 
 
-
-
-
+/*Spase data or unusual tags visualisation*/
+setting::special_spase {
+  type: boolean;
+  label: tr("SpaSe or unusual tags");
+  default: true;
+}
+way[susceptibility="flood hazard"][setting("special_spase")]{
+    fill-color: blue; 
+    width: 20;
+}
+way[susceptibility="dense forest"][setting("special_spase")]{
+    color: green; 
+    width: 20;
+}
+way[flood_prone=yes][setting("special_spase")]{
+    width: 20;
+}
 
