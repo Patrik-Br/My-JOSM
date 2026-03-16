@@ -147,7 +147,7 @@ node[/^damage:/] < way[highway] {
 }
 /* For mapping after earthquakes in Morocco october 2023 - Node tagged as damage:  */
 node[/^damage:/]{ 
-    icon-image: "https://raw.githubusercontent.com/Patrik-Br/MyPaintStyle/main/icons/damage.png";
+    icon-image: "https://raw.githubusercontent.com/Patrik-Br/My-JOSM/main/Paint_style/icons/damage.png";
     icon-height: 20;
     icon-offset: 8;
     z-index: -3;
@@ -164,7 +164,7 @@ way[destroyed:building=yes] {
 /* Highlighting end of highway*/
 way[highway]!:closed >[index=1] node|z15-!:connection!:tagged,
 way[highway]!:closed >[index=-1] node|z15-!:connection!:tagged{ 
-    icon-image: "https://raw.githubusercontent.com/Patrik-Br/MyPaintStyle/main/icons/unconnected%20way.png";
+    icon-image: "https://raw.githubusercontent.com/Patrik-Br/My-JOSM/main/Paint_style/icons/unconnected%20way.png";
     icon-height: 30;
     icon-offset: 8;
     z-index: -3;
@@ -209,7 +209,7 @@ node[colour] {
 
 /* way for me to visually mark objects. Also added to my personal validator rules so I won't upload */
 *[star]{
-    icon-image: "https://raw.githubusercontent.com/Patrik-Br/MyPaintStyle/main/icons/star.png";
+    icon-image: "https://raw.githubusercontent.com/Patrik-Br/My-JOSM/main/Paint_style/icons/star.png";
     icon-height: 20;
 } 
 
@@ -266,7 +266,7 @@ setting::show_validator {
 
 /* Base style for all validated tasks */
 way[validatedBy][setting("show_validator")] {
-    font-size: 12px;
+    font-size: 14px;
     text-halo-radius: 2;
 }
 
@@ -284,6 +284,9 @@ way[validatedBy=8520420][setting("show_validator")] { text: tr("gnoye"); }
 way[validatedBy=4355439][setting("show_validator")] { text: tr("Libor Bednarik"); }
 way[validatedBy=8285929][setting("show_validator")] { text: tr("JohnW11"); }
 way[validatedBy=344974][setting("show_validator")] { text: tr("Lubosse"); }
+way[validatedBy=1962399][setting("show_validator")] { text: tr("Frans S"); }
+way[validatedBy=4367139][setting("show_validator")] { text: tr("sab27"); }
+way[validatedBy=5328434][setting("show_validator")] { text: tr("Puxan"); }
 
 
 /*Spase data or unusual tags visualisation*/

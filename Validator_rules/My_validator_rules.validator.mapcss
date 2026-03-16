@@ -1,11 +1,16 @@
+/* {{{
+#!rule 
+
+PRI KAZDOM NAHRAVANI NA SERVER ZMAZAT KOMENTAR NA ZACIATKU (TENTO) A NA KONCI (ZATVORKY)*/
+
 meta
 {
-  title: "Validating tasks in HOT TM projects (HOT TM Validator Checker)";
-  version: "25_2025-09-26";
+  title: "Missing Maps validation on HOT TM (HOT TM Validator Checker)";
+  version: "[[revision]]_[[date]]";
   description: "Few rules mostly for flagging objects with layer tag.";
   icon: "HOT_TM_logo.svg";
   author: "Patrik_B";
-  link: "http://bit.ly/3zzivTi";
+  link: "https://docs.google.com/document/d/1EhOof9iZ5E9yTe64IPqBy8FHSM9hC7j3MyTE9qSzt1Q/edit?usp=sharing";
 }
 
 /*
@@ -86,17 +91,36 @@ way[building][building!=apartments][building!=barracks][building!=bungalow][buil
   group: tr("HOT TM Validator Checker");
 }
 
-/* When downloading MapSwipe results (HOT Tasking Manager Geometries) sometimes there are overlaping tasks. The next two rules will flag those. */
-/* Overlaping MapSwipe tasks */
+/* When downloading MapSwipe results (HOT Tasking Manager Geometries) sometimes there are overlapping tasks. The next two rules will flag those. */
+/* Overlapping MapSwipe tasks */
 area[group_id][group_id!~/no|entrance/] ⧉ area[group_id:part][group_id:part!~/no|entrance/],
 area[group_id][group_id!~/no|entrance/] ⧉ area[group_id][group_id!~/no|entrance/] {
-  throwError: tr("Overlapping tasks");
+  throwError: tr("MapSwipe overlapping tasks");
     group: tr("HOT TM Validator Checker");
 }
 
 /* Task inside another task */
 *[group_id][group_id!~/no|entrance/][any(tag("layer"),"0") = any(parent_tag("layer"),"0")] ∈
 area[group_id][group_id!~/no|entrance/] {
-  throwError: tr("Task inside another task");
+  throwError: tr("MapSwipe task inside task");
     group: tr("HOT TM Validator Checker");
 }
+
+/* Two rules for overlapping landuse, created during Rutshuru campaign  */
+way[landuse] ∈ *[landuse]{
+  throwWarning: tr("Landuse inside landuse");
+    group: tr("HOT TM Validator Checker");
+}
+
+*[landuse] ⧉ *[landuse]{
+  throwWarning: tr("Overlaping landuse areas");
+    group: tr("HOT TM Validator Checker");
+}
+
+/* Sometimes mappers tag the way with place=* instead of using the tagging on a node/point */
+way[place]{
+  throwWarning: tr("place=* attribute on way instead of point");
+    group: tr("HOT TM Validator Checker");
+}
+
+/* }}} */
