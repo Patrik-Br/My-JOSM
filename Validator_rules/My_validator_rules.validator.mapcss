@@ -8,7 +8,7 @@ meta
   title: "Missing Maps validation on HOT TM (HOT TM Validator Checker)";
   version: "[[revision]]_[[date]]";
   description: "Few rules mostly for flagging objects with layer tag.";
-  icon: "HOT_TM_logo.svg";
+  icon: "https://raw.githubusercontent.com/Patrik-Br/MyPaintStyle/main/Validator_rules/MM_logo.png";
   author: "Patrik_B";
   link: "https://docs.google.com/document/d/1EhOof9iZ5E9yTe64IPqBy8FHSM9hC7j3MyTE9qSzt1Q/edit?usp=sharing";
 }
@@ -23,7 +23,7 @@ meta
 }
 
 /*
-  Uploaded part of taskgrid
+  Uploaded part of TM project taskgrid
 */
 *[taskId][taskStatus]{
 throwError: tr("Part of project taskgrid");
@@ -67,7 +67,7 @@ group: tr("HOT TM Validator Checker");
 }
 
 /*
-  Node with building tag - turned off because way more often we map buildings as nodes on purpose then by mistake
+  Node with building tag - turned off because more often we map buildings as nodes on purpose then by mistake. I recommend to use NodeBuildings paint style to highlight them
 
 node[building]{
 throwWarning: tr("Node has a building tag");
@@ -84,9 +84,9 @@ group: tr("HOT TM Validator Checker");
 }
 
 /*
-  Building with tag that is not listed in the current list of https://wiki.openstreetmap.org/wiki/Key:building 23.07.2023
+  Building with tag that is not listed in the current list of https://wiki.openstreetmap.org/wiki/Key:building created 23.07.2023 - updated 20.03.2026
 */
-way[building][building!=apartments][building!=barracks][building!=bungalow][building!=cabin][building!=detached][building!=dormitory][building!=farm][building!=ger][building!=hotel][building!=house][building!=houseboat][building!=residential][building!=semidetached_house][building!=static_caravan][building!=stilt_house][building!=terrace][building!=tree_house][building!=commercial][building!=industrial][building!=kiosk][building!=office][building!=retail][building!=supermarket][building!=warehouse][building!=cathedral][building!=chapel][building!=church][building!=kingdom_hall][building!=monastery][building!=mosque][building!=presbytery][building!=religious][building!=shrine][building!=synagogue][building!=temple][building!=bakehouse][building!=bridge][building!=civic][building!=college][building!=fire_station][building!=government][building!=gatehouse][building!=hospital][building!=kindergarten][building!=public][building!=school][building!=toilets][building!=train_station][building!=transportation][building!=university][building!=barn][building!=conservatory][building!=cowshed][building!=farm_auxiliary][building!=greenhouse][building!=slurry_tank][building!=stable][building!=sty][building!=livestock][building!=grandstand][building!=pavilion][building!=riding_hall][building!=sports_hall][building!=stadium][building!=hangar][building!=hut][building!=shed][building!=carport][building!=garage][building!=garages][building!=parking][building!=digester][building!=service][building!=transformer_tower][building!=water_tower][building!=storage_tank][building!=silo][building!=beach_hut][building!=bunker][building!=castle][building!=construction][building!=container][building!=military][building!=roof][building!=ruins][building!=tent][building!=tower][building!=yes]{
+way[building][building!=apartments][building!=barracks][building!=bungalow][building!=cabin][building!=detached][building!=annexe][building!=dormitory][building!=farm][building!=ger][building!=hotel][building!=house][building!=houseboat][building!=residential][building!=semidetached_house][building!=static_caravan][building!=stilt_house][building!=terrace][building!=tree_house][building!=trullo][building!=commercial][building!=industrial][building!=kiosk][building!=office][building!=retail][building!=supermarket][building!=warehouse][building!=religious][building!=cathedral][building!=chapel][building!=church][building!=kingdom_hall][building!=monastery][building!=mosque][building!=presbytery][building!=shrine][building!=synagogue][building!=temple][building!=bakehouse][building!=bridge][building!=civic][building!=clock_tower][building!=college][building!=fire_station][building!=government][building!=gatehouse][building!=hospital][building!=kindergarten][building!=museum][building!=public][building!=school][building!=toilets][building!=train_station][building!=transportation][building!=university][building!=barn][building!=conservatory][building!=cowshed][building!=farm_auxiliary][building!=greenhouse][building!=slurry_tank][building!=stable][building!=sty][building!=livestock][building!=grandstand][building!=pavilion][building!=riding_hall][building!=sports_hall][building!=sports_centre][building!=stadium][building!=allotment_house][building!=boathouse][building!=hangar][building!=hut][building!=shed][building!=carport][building!=garage][building!=garages][building!=parking][building!=digester][building!=service][building!=tech_cab][building!=transformer_tower][building!=water_tower][building!=storage_tank][building!=silo][building!=beach_hut][building!=bunker][building!=castle][building!=construction][building!=container][building!=guardhouse][building!=military][building!=outbuilding][building!=pagoda][building!=quonset_hut][building!=roof][building!=ruins][building!=ship][building!=tent][building!=tower][building!=triumphal_arch][building!=windmill]{
   throwWarning: tr("Building has incorrect tag");
   group: tr("HOT TM Validator Checker");
 }
