@@ -229,7 +229,7 @@ node
 */
 
 /* Showing text put as comment or note, I used this when importing place names from terrain*/
-*[comment]{
+*[comment][setting("special_spase")]{
     text: tag("comment");
     text-color: #fcc;
     text-halo-color: #000;
@@ -237,7 +237,7 @@ node
     font-size: 15px;
     font-weight: bold;
 }
-*[note]{
+*[note][setting("special_spase")]{
     text: tag("note");
     text-color: #fcc;
     text-halo-color: #000;
@@ -287,7 +287,7 @@ way[validatedBy=344974][setting("show_validator")] { text: tr("Lubosse"); }
 way[validatedBy=1962399][setting("show_validator")] { text: tr("Frans S"); }
 way[validatedBy=4367139][setting("show_validator")] { text: tr("sab27"); }
 way[validatedBy=5328434][setting("show_validator")] { text: tr("Puxan"); }
-
+way[validatedBy=11713186][setting("show_validator")] { text: tr("Václav Šilpoch"); }
 
 /*Spase data or unusual tags visualisation*/
 setting::special_spase {
@@ -307,3 +307,8 @@ way[flood_prone=yes][setting("special_spase")]{
     width: 20;
 }
 
+/* END of Spase data or unusual tags visualisation*/
+
+way[was:amenity=refugee_site] , way[amenity=refugee_site]{
+    fill-color:#ff8400
+}
