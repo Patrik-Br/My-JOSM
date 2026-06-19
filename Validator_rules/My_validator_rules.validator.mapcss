@@ -117,9 +117,9 @@ way[landuse] ∈ *[landuse]{
     group: tr("HOT TM Validator Checker");
 }
 
-/* Sometimes mappers tag the way with place=* instead of using the tagging on a node/point */
-way[place]{
-  throwWarning: tr("place=* attribute on way instead of point");
+/* Sometimes mappers tag the residential area with place=* instead of using the tagging on a node/point */
+way[landuse=residential][place]{
+  throwWarning: tr("place=* attribute on residential area instead of point");
     group: tr("HOT TM Validator Checker");
 }
 

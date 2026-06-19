@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<presets xmlns="http://josm.openstreetmap.de/tagging-preset-1.0">
+<group name="My presets">
+  <item name="Goma refugee camp">
+    <!-- Used when deleting goma camps -->
+    <key key="note" value="camps were abandoned early 2025, we verified on the imagery date May 17, 2025" />
+    <key key="was:amenity" value="refugee_site" />
+  </item>
+  <item name="3rdpass comment">
+    <!-- Hashtag to use in changeset comment for thirdpass validation -->
+    <key key="star" value="#msf3rdpass " />
+  </item>
+ </group> 
+</presets>
