@@ -271,13 +271,13 @@ way[validatedBy][setting("show_validator")] {
 }
 
 /* I put names into tr("") because when I used simple text I had to put always two words separate by space */
-way[validatedBy=2916048][setting("show_validator")]  { text: tr("Norbert Dichter"); }
 way[validatedBy=5438501][setting("show_validator")]  { text: tr("anthaas"); }
 way[validatedBy=378610][setting("show_validator")]   { text: tr("Jorieke V"); }
+way[validatedBy=2278272][setting("show_validator")]  { text: tr("bluestarfish"); }
 way[validatedBy=1414812][setting("show_validator")]  { text: tr("RAytoun"); }
 way[validatedBy=9621269][setting("show_validator")]  { text: tr("martien-176"); }
+way[validatedBy=2916048][setting("show_validator")]  { text: tr("Norbert Dichter"); }
 way[validatedBy=2249513][setting("show_validator")]  { text: tr("hebolz"); }
-way[validatedBy=2278272][setting("show_validator")]  { text: tr("bluestarfish"); }
 way[validatedBy=11880034][setting("show_validator")] { text: tr("peculiar theater"); }
 way[validatedBy=10478691][setting("show_validator")] { text: tr("Patrik_B"); }
 way[validatedBy=8520420][setting("show_validator")] { text: tr("gnoye"); }
@@ -288,6 +288,8 @@ way[validatedBy=1962399][setting("show_validator")] { text: tr("Frans S"); }
 way[validatedBy=4367139][setting("show_validator")] { text: tr("sab27"); }
 way[validatedBy=5328434][setting("show_validator")] { text: tr("Puxan"); }
 way[validatedBy=11713186][setting("show_validator")] { text: tr("Václav Šilpoch"); }
+way[validatedBy=11628862][setting("show_validator")] { text: tr("Kraan46"); }
+way[validatedBy=186592][setting("show_validator")] { text: tr("Johnwhelan"); }
 
 /*Spase data or unusual tags visualisation*/
 setting::special_spase {
@@ -304,7 +306,7 @@ way[susceptibility="dense forest"][setting("special_spase")]{
     width: 20;
 }
 way[flood_prone=yes][setting("special_spase")]{
-    width: 20;
+    color: blue;
 }
 
 /* END of Spase data or unusual tags visualisation*/
@@ -312,3 +314,44 @@ way[flood_prone=yes][setting("special_spase")]{
 way[was:amenity=refugee_site] , way[amenity=refugee_site]{
     fill-color:#ff8400
 }
+
+
+/* First declare the group */
+settings::multipolygon_group {
+    label: tr("Multipolygon Settings");
+}
+
+/* Then reference it in each setting */
+setting::multipolygons {
+  type: boolean;
+  label: tr("Show inner/outer colors");
+  default: true;
+  group: "multipolygon_group";
+}
+
+setting::multipolygonsWithoutRole {
+  type: boolean;
+  label: tr("Highlight missing role");
+  default: true;
+  group: "multipolygon_group";
+}
+
+/* Outer member of a multipolygon */
+relation[type=multipolygon] >[role=outer] way[setting("multipolygons")] {
+    color: #00cc00;
+    width: 4;
+}
+
+/* Inner member of a multipolygon */
+relation[type=multipolygon] >[role=inner] way[setting("multipolygons")] {
+    color: #cc0000;
+    width: 4;
+}
+
+/* Member with no role set */
+relation[type=multipolygon] >[role=""] way[setting("multipolygonsWithoutRole")] {
+    color: #00c8ff;
+    width: 4;
+    dashes: 8,4;
+}
+
