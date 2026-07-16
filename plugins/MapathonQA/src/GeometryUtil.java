@@ -1,0 +1,104 @@
+package org.openstreetmap.josm.plugins.mapathonqa;
+
+import java.util.List;
+import org.openstreetmap.josm.data.osm.Node;
+import org.openstreetmap.josm.data.osm.Way;
+
+public class GeometryUtil {
+
+    public static boolean nodeInsidePolygon(double lat, double lon, List<Node> ring) {
+        int n = ring.size();
+        boolean inside = false;
+        for (int i = 0, j = n - 1; i < n; j = i++) {
+            Node ni = ring.get(i); Node nj = ring.get(j);
+            if (ni == null || nj == null) continue;
+            double xi = ni.lon(), yi = ni.lat(), xj = nj.lon(), yj = nj.lat();
+            if (((yi > lat) != (yj > lat)) && (lon < (xj - xi) * (lat - yi) / (yj - yi) + xi))
+                inside = !inside;
+        }
+        return inside;
+    }
+
+    public static boolean segmentsIntersect(Node a1, Node a2, Node b1, Node b2) {
+        if (a1 == null || a2 == null || b1 == null || b2 == null) return false;
+        double ax1=a1.lon(),ay1=a1.lat(),ax2=a2.lon(),ay2=a2.lat();
+        double bx1=b1.lon(),by1=b1.lat(),bx2=b2.lon(),by2=b2.lat();
+        double d1=cross(bx2-bx1,by2-by1,ax1-bx1,ay1-by1);
+        double d2=cross(bx2-bx1,by2-by1,ax2-bx1,ay2-by1);
+        double d3=cross(ax2-ax1,ay2-ay1,bx1-ax1,by1-ay1);
+        double d4=cross(ax2-ax1,ay2-ay1,bx2-ax1,by2-ay1);
+        if (((d1>0&&d2<0)||(d1<0&&d2>0))&&((d3>0&&d4<0)||(d3<0&&d4>0))) return true;
+        return false;
+    }
+
+    private static double cross(double ux,double uy,double vx,double vy) { return ux*vy-uy*vx; }
+
+    public static boolean waysOverlap(Way a, Way b) {
+        List<Node> an=a.getNodes(), bn=b.getNodes();
+        int as=an.size(), bs=bn.size();
+        if (as<3||bs<3) return false;
+        for (int i=0;i<as-1;i++) for (int j=0;j<bs-1;j++)
+            if (segmentsIntersect(an.get(i),an.get(i+1),bn.get(j),bn.get(j+1))) return true;
+        Node firstA=an.get(0);
+        if (firstA!=null&&nodeInsidePolygon(firstA.lat(),firstA.lon(),bn)) return true;
+        Node firstB=bn.get(0);
+        if (firstB!=null&&nodeInsidePolygon(firstB.lat(),firstB.lon(),an)) return true;
+        return false;
+    }
+
+    public static boolean highwayCrossesBuilding(Way highway, Way building) {
+        List<Node> hn=highway.getNodes(), bn=building.getNodes();
+        int hs=hn.size(), bs=bn.size();
+        if (hs<2||bs<3) return false;
+        for (int i=0;i<hs-1;i++) for (int j=0;j<bs-1;j++)
+            if (segmentsIntersect(hn.get(i),hn.get(i+1),bn.get(j),bn.get(j+1))) return true;
+        for (Node n:hn) if (n!=null&&nodeInsidePolygon(n.lat(),n.lon(),bn)) return true;
+        return false;
+    }
+
+    public static boolean bboxDisjoint(Way a, Way b) {
+        double[] ba=bbox(a), bb=bbox(b);
+        if (ba==null||bb==null) return true;
+        return ba[1]<bb[0]||bb[1]<ba[0]||ba[3]<bb[2]||bb[3]<ba[2];
+    }
+
+    private static double[] bbox(Way w) {
+        List<Node> nodes=w.getNodes();
+        if (nodes.isEmpty()) return null;
+        double minLat=Double.MAX_VALUE,maxLat=-Double.MAX_VALUE;
+        double minLon=Double.MAX_VALUE,maxLon=-Double.MAX_VALUE;
+        for (Node n:nodes) {
+            if (n==null) continue;
+            if (n.lat()<minLat) minLat=n.lat(); if (n.lat()>maxLat) maxLat=n.lat();
+            if (n.lon()<minLon) minLon=n.lon(); if (n.lon()>maxLon) maxLon=n.lon();
+        }
+        return new double[]{minLat,maxLat,minLon,maxLon};
+    }
+
+    public static boolean isMappedDuring(org.openstreetmap.josm.data.osm.OsmPrimitive p,
+                                          java.util.Date since) {
+        return isMappedDuring(p, since, null);
+    }
+
+    public static boolean isMappedDuring(org.openstreetmap.josm.data.osm.OsmPrimitive p,
+                                          java.util.Date since, java.util.Date until) {
+        if (since == null) return true;
+        int raw = p.getRawTimestamp();
+        if (raw == 0) return true;
+        long sinceSeconds = since.getTime() / 1000L;
+        if (raw < sinceSeconds) return false;
+        if (until != null) {
+            long untilSeconds = until.getTime() / 1000L;
+            if (raw > untilSeconds) return false;
+        }
+        return true;
+    }
+
+    public static boolean waysShareNode(Way a, Way b) {
+        for (Node na : a.getNodes()) {
+            if (na == null) continue;
+            for (Node nb : b.getNodes()) { if (na == nb) return true; }
+        }
+        return false;
+    }
+}

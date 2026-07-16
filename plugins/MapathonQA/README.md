@@ -1,0 +1,68 @@
+# MapathonQA – JOSM Plugin
+
+Post-mapathon data quality checker for Missing Maps.
+
+## Build
+
+From the `plugins/` repo root (needs JDK 17+):
+
+1. Download `josm-tested.jar` from https://josm.openstreetmap.de/josm-tested.jar into `lib/` (gitignored, not committed).
+2. **Windows:** `build.bat`
+   **Linux/Mac:** `./build.sh`
+
+This produces `MapathonQA.jar` in the repo root — copy to JOSM's plugins folder and restart JOSM.
+
+## Critical JOSM API notes (learned from bytecode inspection)
+
+- Use `getRawTimestamp()` (returns int, Unix seconds) — NOT `getTimestamp()` (wrong return type in JOSM 19555)
+- Use `MainApplication.getLayerManager().getEditDataSet()` — NOT `getActiveDataLayer()`
+- Add menu items with `menuRoot.add(new JMenuItem(action))` — NOT `MainMenu.add()`
+- `addMenu()` signature: `(name, tooltip, mnemonic, position, helpId)`
+- `SimpleDateFormat` MUST use `sdf.setTimeZone(TimeZone.getTimeZone("UTC"))` — all times are UTC
+- Geometry uses raw lat/lon with `cos(lat)` correction on longitude — matches JOSM projected coords
+
+## Architecture
+
+| File | Purpose |
+|---|---|
+| `MapathonQAPlugin.java` | Entry point, builds menu |
+| `RunFullQAAction.java` | Wizard: HOT TM API → task IDs → JOSM search query |
+| `RunQAOnCurrentLayerAction.java` | Runs all 7 checks with progress dialog, generates report |
+| `GenerateDemoReportAction.java` | Demo report with 314 simulated issues per check |
+| `CheckNonYesBuildingTagsAction.java` | Check 1: building ≠ yes |
+| `CheckOverlappingBuildingsAction.java` | Check 2: overlapping/contained buildings |
+| `CheckBuildingsOnHighwaysAction.java` | Check 3: buildings crossing roads |
+| `CheckNonOrthogonalBuildingsAction.java` | Check 4: non-square corners (matches mapathoner.jar algorithm exactly) |
+| `CheckBuildingLayerTagAction.java` | Check 5: buildings with layer=* tag |
+| `CheckBuildingsWithSharedNodesAction.java` | Check 6: shared nodes between buildings and other objects |
+| `CheckUntaggedWaysAction.java` | Check 7: untagged ways (excludes multipolygon members) |
+| `GeometryUtil.java` | Ray-casting, segment intersection, cos(lat) angle calc, time filter |
+| `QAResults.java` | Data container for all check results |
+| `ReportWriter.java` | Generates branded HTML report (MM logo embedded as base64 SVG) |
+
+## Time filtering
+
+All checks accept `(DataSet ds, Date since, Date until)`. Objects are only flagged if
+`getRawTimestamp() >= since && getRawTimestamp() <= until`. Objects with timestamp=0
+(unknown) are always included. The since/until dates are stored in `MapathonQAPlugin.lastStart`
+/ `lastEnd` (strings) and parsed as UTC in `RunQAOnCurrentLayerAction.parseStartTime()`.
+
+## HOT TM API
+
+```
+GET https://tasking-manager-production-api.hotosm.org/api/v2/projects/{ID}/activities/latest/
+```
+
+Returns latest action per task. Plugin filters by `actionDate` within the time window.
+All taskStatus values included (MAPPED, VALIDATED, INVALIDATED, BADIMAGERY, READY).
+Task grid loaded via OpenLocationAction reflection (tries 3 method signatures for compat).
+
+## Report
+
+`ReportWriter.write(QAResults)` generates a self-contained HTML file with:
+- Missing Maps logo embedded as base64 SVG (passed as constant string `LOGO_URI`)
+- White header with MM logo + red bottom border
+- Meta strip, two summary cards, issues table, recommendations
+- Saved to ~/Downloads/ (falls back to Desktop, then home)
+
+`ReportWriter.writeDemoReport(QAResults)` wraps `write()` and injects a blue demo banner.
