@@ -49,7 +49,7 @@ public class RunFullQAAction extends AbstractAction {
     private void showStep1Dialog() {
         JDialog dlg = new JDialog((java.awt.Frame) null, "MapathonQA \u2013 Step 1: Project & Time Window", true);
         dlg.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-        dlg.setSize(460, 290);
+        dlg.setSize(460, 330);
         dlg.setLocationRelativeTo(null);
 
         JPanel main = new JPanel(new GridBagLayout());
@@ -58,8 +58,16 @@ public class RunFullQAAction extends AbstractAction {
         gc.insets = new Insets(6, 4, 6, 4); gc.anchor = GridBagConstraints.WEST;
 
         gc.gridx=0; gc.gridy=0; gc.gridwidth=2;
-        main.add(new JLabel("<html><b>HOT Tasking Manager Project ID</b></html>"), gc);
+        main.add(new JLabel("<html><b>Mapathon Name</b> <small>(optional)</small></html>"), gc);
         gc.gridy=1; gc.gridwidth=1;
+        gc.gridx=0; main.add(new JLabel("Name:"), gc);
+        JTextField mapathonNameField = new JTextField("", 20);
+        mapathonNameField.setToolTipText("Shown on the report, e.g. \"Kathmandu University Mapathon\"");
+        gc.gridx=1; main.add(mapathonNameField, gc);
+
+        gc.gridx=0; gc.gridy=2; gc.gridwidth=2;
+        main.add(new JLabel("<html><b>HOT Tasking Manager Project ID</b></html>"), gc);
+        gc.gridy=3; gc.gridwidth=1;
         gc.gridx=0; main.add(new JLabel("Project ID:"), gc);
         JTextField projectIdField = new JTextField("", 10);
         projectIdField.setToolTipText("HOT Tasking Manager project number, e.g. 50430");
@@ -76,13 +84,13 @@ public class RunFullQAAction extends AbstractAction {
         cal.add(java.util.Calendar.HOUR_OF_DAY, -2);
         String defaultStart = sdf.format(cal.getTime());
 
-        gc.gridx=0; gc.gridy=2; gc.gridwidth=2;
+        gc.gridx=0; gc.gridy=4; gc.gridwidth=2;
         main.add(new JLabel("<html><b>Mapathon Time Window (UTC)</b><br><small>Format: YYYY-MM-DD HH:MM</small></html>"), gc);
-        gc.gridy=3; gc.gridwidth=1;
+        gc.gridy=5; gc.gridwidth=1;
         gc.gridx=0; main.add(new JLabel("Start (UTC):"), gc);
         JTextField startField = new JTextField(defaultStart, 16);
         gc.gridx=1; main.add(startField, gc);
-        gc.gridy=4;
+        gc.gridy=6;
         gc.gridx=0; main.add(new JLabel("End (UTC):"), gc);
         JTextField endField = new JTextField(defaultEnd, 16);
         gc.gridx=1; main.add(endField, gc);
@@ -98,9 +106,10 @@ public class RunFullQAAction extends AbstractAction {
             if (pid < 1) { JOptionPane.showMessageDialog(dlg, "Please enter a valid project ID.", "MapathonQA", JOptionPane.ERROR_MESSAGE); return; }
             String startVal = startField.getText().trim();
             String endVal   = endField.getText().trim();
-            MapathonQAPlugin.lastProjectId = pid;
-            MapathonQAPlugin.lastStart     = startVal;
-            MapathonQAPlugin.lastEnd       = endVal;
+            MapathonQAPlugin.lastProjectId    = pid;
+            MapathonQAPlugin.lastStart        = startVal;
+            MapathonQAPlugin.lastEnd          = endVal;
+            MapathonQAPlugin.lastMapathonName = mapathonNameField.getText().trim();
             dlg.dispose();
             fetchTaskIds(pid, startVal, endVal);
         });
@@ -138,7 +147,7 @@ public class RunFullQAAction extends AbstractAction {
     private void showStep2Dialog(int projectId, String start, String end, List<Integer> taskIds) {
         JDialog dlg = new JDialog((java.awt.Frame) null, "MapathonQA \u2013 Step 2: Load & Select Tasks", true);
         dlg.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-        dlg.setSize(700, 720);
+        dlg.setSize(840, 520);
         dlg.setLocationRelativeTo(null);
 
         JPanel main = new JPanel(new GridBagLayout());
@@ -153,45 +162,31 @@ public class RunFullQAAction extends AbstractAction {
             : "<html><b style='color:#2e7d32'>"+taskIds.size()+" task(s)</b> were mapped during the mapathon<br>(Project #"+projectId+", "+start+" \u2192 "+end+" UTC)</html>";
         main.add(new JLabel(summary), gc);
 
+        String taskGridUrl = "https://tasking-manager-production-api.hotosm.org/api/v2/projects/"+projectId+"/tasks/?as_file=true&format=geojson";
+        String searchQuery = taskIds.isEmpty() ? "" : buildJosmSearchQuery(taskIds);
         if (!taskIds.isEmpty()) {
-            gc.gridy=1; main.add(new JLabel("<html><b>Task IDs:</b></html>"), gc);
-            gc.gridy=2; gc.fill=GridBagConstraints.BOTH; gc.weighty=0.25;
-            JTextArea idsArea = new JTextArea(formatTaskIds(taskIds));
-            idsArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 11)); idsArea.setEditable(false); idsArea.setLineWrap(true);
-            main.add(new JScrollPane(idsArea), gc);
-
-            gc.gridy=3; gc.fill=GridBagConstraints.HORIZONTAL; gc.weighty=0;
-            main.add(new JLabel("<html><b>JOSM Search Query</b> \u2013 paste this in Edit \u2192 Search (Ctrl+F):</html>"), gc);
-            gc.gridy=4; gc.fill=GridBagConstraints.BOTH; gc.weighty=0.35;
-            String searchQuery = buildJosmSearchQuery(taskIds);
-            JTextArea queryArea = new JTextArea(searchQuery);
-            queryArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 11)); queryArea.setEditable(false); queryArea.setLineWrap(true);
-            main.add(new JScrollPane(queryArea), gc);
-
-            gc.gridy=5; gc.fill=GridBagConstraints.NONE; gc.weighty=0;
-            JButton btnCopy = new JButton("\uD83D\uDCCB Copy Search Query to Clipboard");
-            btnCopy.addActionListener(ev -> { Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(searchQuery), null); btnCopy.setText("\u2713 Copied!"); });
-            main.add(btnCopy, gc);
+            gc.gridy=1; gc.fill=GridBagConstraints.NONE; gc.weighty=0;
+            JButton btnCopyQuery = new JButton("\uD83D\uDCCB Copy Search Query to Clipboard");
+            btnCopyQuery.addActionListener(ev -> { Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(searchQuery), null); btnCopyQuery.setText("\u2713 Copied!"); });
+            main.add(btnCopyQuery, gc);
         }
 
-        String taskGridUrl = "https://tasking-manager-production-api.hotosm.org/api/v2/projects/"+projectId+"/tasks/?as_file=true&format=geojson";
-        gc.gridy=6; gc.gridwidth=2; gc.fill=GridBagConstraints.HORIZONTAL;
+        gc.gridy=2; gc.gridwidth=2; gc.fill=GridBagConstraints.HORIZONTAL;
         String steps = taskIds.isEmpty() ? "" :
-            "<html><b>Next steps:</b><ol>"
-            + "<li>If you left the checkbox below ticked, the task grid will load automatically when you close this dialog. Otherwise load it manually:<br>"
-            + "<small>File \u2192 Open Location (Ctrl+L) \u2192 paste:<br><tt>"+taskGridUrl+"</tt></small></li>"
-            + "<li>Use <b>Edit \u2192 Search (Ctrl+F)</b> and paste the search query above to select the mapathon task squares</li>"
-            + "<li>Download OSM data for the selected tasks: <b>File \u2192 Download in current view</b> or use the Download Along Way tool</li>"
-            + "<li>Click <b>Run QA on Current Layer</b> from the MapathonQA menu</li>"
+            "<html><body style='line-height:140%'><b>Next steps:</b><ol style='margin-left:16px'>"
+            + "<li style='margin-bottom:8px'>If you left the checkbox below ticked, the task grid will load automatically when you close this dialog.</li>"
+            + "<li style='margin-bottom:8px'>Use <b>Edit \u2192 Search (Ctrl+F)</b> and paste the search query you copied above to select the mapathon task squares</li>"
+            + "<li style='margin-bottom:8px'>Download OSM data for the selected tasks using the <b>Download Along Way</b> tool</li>"
+            + "<li style='margin-bottom:8px'>Click <b>Run QA on Current Layer</b> from the MapathonQA menu</li>"
             + "</ol>"
             + "<p style='margin:6px 0 2px'><b>\u2139 Note on task detection:</b></p>"
             + "<p style='margin:2px 0'>Task IDs are based on the <b>most recent action date</b> per task. Tasks mapped during the mapathon but later re-validated or invalidated may show a different date and could fall outside the window.</p>"
             + "<p style='margin:2px 0'><b>Included task statuses:</b> MAPPED, VALIDATED, INVALIDATED, BADIMAGERY, READY \u2014 all statuses are included, the time window is the only filter.</p>"
-            + "</html>";
+            + "</body></html>";
         main.add(new JLabel(steps), gc);
 
         JCheckBox chkLoad = new JCheckBox("Automatically load task grid into JOSM when closing", true);
-        gc.gridy=7;
+        gc.gridy=3;
         if (!taskIds.isEmpty()) main.add(chkLoad, gc);
 
         JPanel btns = new JPanel();
@@ -287,12 +282,6 @@ public class RunFullQAAction extends AbstractAction {
     private String buildJosmSearchQuery(List<Integer> taskIds) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < taskIds.size(); i++) { if (i > 0) sb.append(" OR "); sb.append("taskId=").append(taskIds.get(i)); }
-        return sb.toString();
-    }
-
-    private String formatTaskIds(List<Integer> ids) {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < ids.size(); i++) { if (i > 0) sb.append(i % 10 == 0 ? "\n" : ", "); sb.append(ids.get(i)); }
         return sb.toString();
     }
 

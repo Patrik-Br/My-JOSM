@@ -5,7 +5,9 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.TimeZone;
 
 import javax.swing.AbstractAction;
@@ -18,6 +20,8 @@ import javax.swing.JProgressBar;
 import javax.swing.SwingWorker;
 
 import org.openstreetmap.josm.data.osm.DataSet;
+import org.openstreetmap.josm.data.osm.Node;
+import org.openstreetmap.josm.data.osm.OsmPrimitive;
 import org.openstreetmap.josm.data.osm.Way;
 import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.tools.I18n;
@@ -32,10 +36,11 @@ public class RunQAOnCurrentLayerAction extends AbstractAction {
     public void actionPerformed(ActionEvent e) {
         runQA(MapathonQAPlugin.lastProjectId,
               MapathonQAPlugin.lastStart,
-              MapathonQAPlugin.lastEnd);
+              MapathonQAPlugin.lastEnd,
+              MapathonQAPlugin.lastMapathonName);
     }
 
-    public static void runQA(int projectId, String start, String end) {
+    public static void runQA(int projectId, String start, String end, String mapathonName) {
         DataSet ds = MainApplication.getLayerManager().getEditDataSet();
         if (ds == null) {
             JOptionPane.showMessageDialog(null,
@@ -73,7 +78,8 @@ public class RunQAOnCurrentLayerAction extends AbstractAction {
                 Date until = parseStartTime(end);
 
                 QAResults r = new QAResults();
-                r.projectId  = projectId;
+                r.projectId     = projectId;
+                r.mapathonName  = mapathonName;
                 r.startTime  = start;
                 r.endTime    = end;
                 r.since      = since;
@@ -81,6 +87,7 @@ public class RunQAOnCurrentLayerAction extends AbstractAction {
                 r.totalNodes     = ds.getNodes().size();
                 r.totalWays      = ds.getWays().size();
                 r.totalRelations = ds.getRelations().size();
+                Set<String> mapperNames = new LinkedHashSet<>();
                 for (Way w : ds.getWays()) {
                     if (w.hasKey("building")) {
                         r.totalBuildings++;
@@ -90,7 +97,16 @@ public class RunQAOnCurrentLayerAction extends AbstractAction {
                         r.totalHighways++;
                         if (GeometryUtil.isMappedDuring(w, since, until)) r.mapathonHighways++;
                     }
+                    if (GeometryUtil.isMappedDuring(w, since, until) && w.getUser() != null) {
+                        mapperNames.add(w.getUser().getName());
+                    }
                 }
+                for (Node n : ds.getNodes()) {
+                    if (GeometryUtil.isMappedDuring(n, since, until) && n.getUser() != null) {
+                        mapperNames.add(n.getUser().getName());
+                    }
+                }
+                r.totalMappers = mapperNames.size();
 
                 publish("Checking building tags... (1/7)");
                 r.nonYesBuildingTags = CheckNonYesBuildingTagsAction.runOn(ds, since, until);
@@ -110,8 +126,14 @@ public class RunQAOnCurrentLayerAction extends AbstractAction {
                 publish("Checking shared nodes... (6/7)");
                 r.buildingsWithSharedNodes = CheckBuildingsWithSharedNodesAction.runOn(ds, since, until);
 
-                publish("Checking untagged ways... (7/7)");
-                r.untaggedWays = CheckUntaggedWaysAction.runOn(ds, since, until);
+                publish("Checking untagged objects... (7/7)");
+                r.untaggedObjects = CheckUntaggedWaysAction.runOn(ds, since, until);
+
+                Set<String> issueMapperNames = new LinkedHashSet<>();
+                for (OsmPrimitive p : r.allFlagged()) {
+                    if (p != null && p.getUser() != null) issueMapperNames.add(p.getUser().getName());
+                }
+                r.issueMappers = issueMapperNames.size();
 
                 return r;
             }
@@ -138,11 +160,14 @@ public class RunQAOnCurrentLayerAction extends AbstractAction {
                     }
 
                     int total = r.totalIssues();
+                    String nameInfo = (r.mapathonName != null && !r.mapathonName.trim().isEmpty())
+                        ? r.mapathonName.trim() + "\n" : "";
                     String projInfo = projectId > 0
                         ? "Project #" + projectId + "  |  " + start + " \u2192 " + end + " (UTC)\n\n"
                         : "";
                     String summary =
-                        "QA complete\n" + projInfo
+                        "QA complete\n" + nameInfo + projInfo
+                        + "  Mappers in time window:      " + r.totalMappers + "\n"
                         + "  Buildings checked:           " + r.totalBuildings
                         + (r.since != null ? " (during mapathon: " + r.mapathonBuildings + ")" : "") + "\n"
                         + "  Highways checked:            " + r.totalHighways
@@ -154,9 +179,10 @@ public class RunQAOnCurrentLayerAction extends AbstractAction {
                         + "  Buildings with layer tag:    " + r.buildingsWithLayerTag.size() + "\n"
                         + "  Shared nodes (buildings):    " + r.buildingsWithSharedNodes.sharedNodeCount
                         + " (" + r.buildingsWithSharedNodes.affectedBuildings.size() + " buildings)\n"
-                        + "  Untagged ways:               " + r.untaggedWays.size() + "\n\n"
+                        + "  Untagged objects:            " + r.untaggedObjects.size() + "\n\n"
                         + "  \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n"
-                        + "  Total issues:    " + total + "\n"
+                        + "  Total issues:    " + total
+                        + " (created by " + r.issueMappers + " mapper" + (r.issueMappers == 1 ? "" : "s") + ")\n"
                         + "  Quality score:   " + String.format("%.0f", r.qualityScore())
                         + "% (" + r.qualityLabel() + ")\n\n"
                         + (total > 0 ? "Flagged objects are selected in the editor.\n" : "\u2713 No issues found!\n")

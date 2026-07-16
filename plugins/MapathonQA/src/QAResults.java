@@ -5,11 +5,14 @@ import org.openstreetmap.josm.data.osm.OsmPrimitive;
 
 public class QAResults {
     public int projectId;
+    public String mapathonName = "";
     public String startTime, endTime;
     public java.util.Date since, until;
 
     public int totalBuildings, totalHighways, totalNodes, totalWays, totalRelations;
     public int mapathonBuildings, mapathonHighways;
+    public int totalMappers;
+    public int issueMappers;
 
     public List<OsmPrimitive> nonYesBuildingTags = new ArrayList<>();
     public Set<OsmPrimitive> overlappingBuildings = new LinkedHashSet<>();
@@ -18,7 +21,7 @@ public class QAResults {
     public List<OsmPrimitive> buildingsWithLayerTag  = new ArrayList<>();
     public CheckBuildingsWithSharedNodesAction.SharedNodeResult buildingsWithSharedNodes
         = new CheckBuildingsWithSharedNodesAction.SharedNodeResult(0, new LinkedHashSet<>());
-    public List<OsmPrimitive> untaggedWays = new ArrayList<>();
+    public List<OsmPrimitive> untaggedObjects = new ArrayList<>();
 
     public Set<OsmPrimitive> allFlagged() {
         Set<OsmPrimitive> all = new LinkedHashSet<>();
@@ -28,7 +31,7 @@ public class QAResults {
         for (OsmPrimitive p : nonOrthogonalBuildings) if (p!=null) all.add(p);
         for (OsmPrimitive p : buildingsWithLayerTag)  if (p!=null) all.add(p);
         for (OsmPrimitive p : buildingsWithSharedNodes.affectedBuildings) if (p!=null) all.add(p);
-        for (OsmPrimitive p : untaggedWays)           if (p!=null) all.add(p);
+        for (OsmPrimitive p : untaggedObjects)        if (p!=null) all.add(p);
         return all;
     }
 

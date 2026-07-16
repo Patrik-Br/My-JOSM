@@ -15,6 +15,7 @@ public class MapathonQAPlugin extends Plugin {
     public static int lastProjectId = 0;
     public static String lastStart  = "";
     public static String lastEnd    = "";
+    public static String lastMapathonName = "";
 
     public MapathonQAPlugin(PluginInformation info) {
         super(info);

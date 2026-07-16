@@ -28,7 +28,7 @@ public class ReportWriter {
         int layerTag     = r.buildingsWithLayerTag.size();
         int sharedNodes  = r.buildingsWithSharedNodes.sharedNodeCount;
         int sharedBldgs  = r.buildingsWithSharedNodes.affectedBuildings.size();
-        int untagged     = r.untaggedWays.size();
+        int untagged     = r.untaggedObjects.size();
         int total        = r.totalIssues();
 
         // "Without issues" uses mapathon counts when available, else total
@@ -36,6 +36,8 @@ public class ReportWriter {
             ? (r.mapathonBuildings + r.mapathonHighways)
             : (r.totalBuildings + r.totalHighways);
         int clean = Math.max(0, mapathonFeatures - total);
+        int issuesPct = mapathonFeatures > 0 ? Math.round(100f * total / mapathonFeatures) : 0;
+        int cleanPct  = mapathonFeatures > 0 ? Math.round(100f * clean / mapathonFeatures) : 100;
 
         String generated = new SimpleDateFormat("yyyy-MM-dd HH:mm").format(new Date());
         String sinceLabel = r.since != null ? formatUTC(r.since) : null;
@@ -56,6 +58,10 @@ public class ReportWriter {
 
             // ── META ────────────────────────────────────────────────
             w.write("<div class=\'meta-card\'>\n");
+            if (r.mapathonName != null && !r.mapathonName.trim().isEmpty()) {
+                w.write("<div class=\'meta-item\'><div class=\'label\'>Mapathon</div>");
+                w.write("<div class=\'value\'>" + esc(r.mapathonName.trim()) + "</div></div>\n");
+            }
             if (r.projectId > 0) {
                 w.write("<div class=\'meta-item\'><div class=\'label\'>Project</div>");
                 w.write("<div class=\'value\'><a href=\'https://tasks.hotosm.org/projects/" + r.projectId + "\' target=\'_blank\'>#" + r.projectId + "</a></div></div>\n");
@@ -66,16 +72,22 @@ public class ReportWriter {
             }
             if (sinceLabel != null) {
                 w.write("<div class=\'meta-item\'><div class=\'label\'>Checks applied to</div>");
-                w.write("<div class=\'value\'>Objects created or edited since " + esc(sinceLabel) + " (UTC)</div></div>\n");
+                w.write("<div class=\'value\'>Objects created or edited during the mapathon</div></div>\n");
             }
+            w.write("<div class=\'meta-item\'><div class=\'label\'>Mappers</div>");
+            w.write("<div class=\'meta-badge-blue\'>" + r.totalMappers + " contributor" + (r.totalMappers == 1 ? "" : "s") + " during mapathon</div></div>\n");
             w.write("</div>\n");
 
             // ── SUMMARY CARDS ────────────────────────────────────────
             w.write("<div class=\'summary-strip\'>\n");
-            w.write("<div class=\'summary-card issues\'><div class=\'summary-num\'>" + total + "</div>");
-            w.write("<div class=\'summary-label\'>Features with issues</div></div>\n");
-            w.write("<div class=\'summary-card clear\'><div class=\'summary-num\'>" + clean + "</div>");
-            w.write("<div class=\'summary-label\'>Features without issues</div></div>\n");
+            w.write("<div class=\'summary-card issues\'><div class=\'summary-num\'>" + issuesPct + "%</div>");
+            w.write("<div class=\'summary-label\'>" + total + " object(s) with issues</div>");
+            if (total > 0) {
+                w.write("<div class=\'summary-sub\'>created by " + r.issueMappers + " mapper" + (r.issueMappers == 1 ? "" : "s") + "</div>");
+            }
+            w.write("</div>\n");
+            w.write("<div class=\'summary-card clear\'><div class=\'summary-num\'>" + cleanPct + "%</div>");
+            w.write("<div class=\'summary-label\'>" + clean + " object(s) without issues</div></div>\n");
             w.write("</div>\n");
 
             // ── ISSUES TABLE ─────────────────────────────────────────
@@ -84,17 +96,17 @@ public class ReportWriter {
             row(w, "Non-yes building tags", nonYes, "High",
                 "Buildings tagged differently than building=yes.");
             row(w, "Overlapping buildings", overlap, "High",
-                "Buildings that geometrically overlap or are contained within another building (each count = one pair. Layer tags are not excluded).");
-            row(w, "Buildings on highways", onRoads, "High",
-                "Building outlines that cross a highway.");
+                "Buildings that geometrically overlap or are contained within another building (each count = one pair).");
+            row(w, "Building outlines that cross a highway", onRoads, "High",
+                "Building drawn through an existing highway.");
             row(w, "Non-orthogonal buildings", nonOrtho, "High",
                 "Rectangular buildings that most likely should be orthogonal with squared corners.");
             row(w, "Buildings with layer tag", layerTag, "High",
                 "Buildings tagged with layer=* created as recommendation from iD editor when two objects are overlapping. The correct solution is for the objects to not overlap.");
             row(w, "Buildings with shared nodes", sharedNodes, "High",
-                "Buildings sharing at least one node with another object (" + sharedBldgs + " buildings affected).");
-            row(w, "Untagged lines", untagged, "High",
-                "Lines with no tags, most likely mappers forgot to add building=yes (multipolygon members excluded).");
+                "Buildings sharing at least one node with another object (each count = one shared node, not a pair; " + sharedBldgs + " building(s) affected).");
+            row(w, "Untagged objects", untagged, "High",
+                "Nodes and ways with no tags, most likely mappers forgot to add a tag such as building=yes.");
             w.write("</tbody></table>\n</div>\n");
 
             // ── RECOMMENDATIONS ──────────────────────────────────────
@@ -107,11 +119,11 @@ public class ReportWriter {
             }
             if (nonYes > 0)     w.write("<li class=\'rec-item\'><strong>Use building=yes for all buildings</strong><p>Unless the project instructions say otherwise or you have local knowledge of the area you are mapping.</p></li>\n");
             if (overlap > 0)    w.write("<li class=\'rec-item\'><strong>Don&#39;t draw a new building overlapping an already existing one</strong><p>Try to draw each building separately. Zoom in and look for outlines already drawn in the area before tracing a new one.</p></li>\n");
-            if (onRoads > 0)    w.write("<li class=\'rec-item\'><strong>Do not draw buildings over roads</strong><p>Building outlines should sit beside roads, not on top of them.</p></li>\n");
+            if (onRoads > 0)    w.write("<li class=\'rec-item\'><strong>Do not draw buildings over highways</strong><p>Building outlines should sit beside highways, not on top of them.</p></li>\n");
             if (nonOrtho > 0)   w.write("<li class=\'rec-item\'><strong>Square building corners after drawing</strong><p>Press &ldquo;Q&rdquo; in your mapping editor after drawing a rectangular building outline to straighten the corners. If mapping in JOSM, use the buildings_tools plugin which draws rectangular buildings automatically.</p></li>\n");
             if (layerTag > 0)   w.write("<li class=\'rec-item\'><strong>Avoid using the layer tag on buildings</strong><p>When iD editor warns about overlapping objects it suggests adding layer=*. The correct fix is to move the object instead so it does not overlap, not to add a layer tag.</p></li>\n");
-            if (sharedNodes > 0) w.write("<li class=\'rec-item\'><strong>Do not snap buildings to roads or other buildings</strong><p>Each building should have its own independent nodes. In iD editor hold &ldquo;Alt&rdquo; (&ldquo;Ctrl&rdquo; in JOSM) to avoid snapping to existing nodes. If you accidentally connected nodes, use &ldquo;D&rdquo; in iD editor (&ldquo;G&rdquo; in JOSM) to unglue them and then adjust their position.</p></li>\n");
-            if (untagged > 0)   w.write("<li class=\'rec-item\'><strong>Always add tags to lines you draw</strong><p>A line with no tags has no meaning in OpenStreetMap. If you drew a building outline, make sure to add building=yes before saving.</p></li>\n");
+            if (sharedNodes > 0) w.write("<li class=\'rec-item\'><strong>Do not snap buildings to highways or other buildings</strong><p>Each building should have its own independent nodes. In iD editor hold &ldquo;Alt&rdquo; (&ldquo;Ctrl&rdquo; in JOSM) to avoid snapping to existing nodes. If you accidentally connected nodes, use &ldquo;D&rdquo; in iD editor (&ldquo;G&rdquo; in JOSM) to unglue them and then adjust their position.</p></li>\n");
+            if (untagged > 0)   w.write("<li class=\'rec-item\'><strong>Always add tags to the nodes and ways you draw</strong><p>A node or way with no tags has no meaning in OpenStreetMap. If you drew a building outline, make sure to add building=yes before saving; if you placed a standalone node, tag it appropriately.</p></li>\n");
             w.write("</ul>\n</div>\n");
 
             w.write("<div class=\'footer\'>Generated by MapathonQA JOSM Plugin &middot; <a href=\'https://www.missingmaps.org\'>Missing Maps</a></div>\n");
@@ -147,6 +159,8 @@ public class ReportWriter {
             + ".summary-card.issues .summary-num { color: #c62828; }\n"
             + ".summary-card.clear .summary-num { color: #2e7d32; }\n"
             + ".summary-label { font-size: 15px; color: #555; }\n"
+            + ".summary-sub { display: inline-block; margin-top: 10px; padding: 5px 14px; background: #fdecea; color: #c62828; font-weight: bold; font-size: 13px; border-radius: 14px; }\n"
+            + ".meta-badge-blue { display: inline-block; margin-top: 3px; padding: 4px 12px; background: #e3f2fd; color: #1565c0; font-weight: bold; font-size: 13px; border-radius: 14px; }\n"
             + ".card { background: #fff; border-radius: 6px; padding: 26px 30px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,.08); }\n"
             + ".card h2 { font-size: 17px; font-weight: bold; color: #212121; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 2px solid #f0f0f0; }\n"
             + "table { width: 100%; border-collapse: collapse; }\n"
