@@ -4,13 +4,13 @@ Post-mapathon data quality checker for Missing Maps.
 
 ## Build
 
-From the `plugins/` repo root (needs JDK 17+):
+From within this `MapathonQA/` folder (needs JDK 17+):
 
 1. Download `josm-tested.jar` from https://josm.openstreetmap.de/josm-tested.jar into `lib/` (gitignored, not committed).
 2. **Windows:** `build.bat`
    **Linux/Mac:** `./build.sh`
 
-This produces `MapathonQA.jar` in the repo root — copy to JOSM's plugins folder and restart JOSM.
+This produces `MapathonQA.jar` in this folder — copy to JOSM's plugins folder and restart JOSM.
 
 ## Critical JOSM API notes (learned from bytecode inspection)
 
