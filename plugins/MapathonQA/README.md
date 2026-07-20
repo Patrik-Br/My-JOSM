@@ -2,6 +2,11 @@
 
 Post-mapathon data quality checker for Missing Maps.
 
+## License
+
+GPLv3 — see [`LICENSE`](LICENSE). JOSM core is "GPLv2 or later," which makes GPLv3 a compatible
+choice for plugins built against it.
+
 ## Build
 
 From within this `MapathonQA/` folder (needs JDK 17+):
