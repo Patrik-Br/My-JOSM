@@ -52,4 +52,13 @@ public class QAResults {
         if (q >= 50) return "Needs improvement";
         return "Poor";
     }
+
+    // "Without issues" uses mapathon (in-window) counts when a time window was set, else totals
+    public int mapathonFeatures() {
+        return since != null ? (mapathonBuildings + mapathonHighways) : (totalBuildings + totalHighways);
+    }
+
+    public int cleanCount() {
+        return Math.max(0, mapathonFeatures() - totalIssues());
+    }
 }

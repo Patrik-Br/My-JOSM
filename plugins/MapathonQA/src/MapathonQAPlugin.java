@@ -37,5 +37,6 @@ public class MapathonQAPlugin extends Plugin {
         menuRoot.add(new JMenuItem(new CheckUntaggedWaysAction()));
         menuRoot.addSeparator();
         menuRoot.add(new JMenuItem(new GenerateDemoReportAction()));
+        menuRoot.add(new JMenuItem(new SetReportFolderAction()));
     }
 }

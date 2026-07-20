@@ -159,6 +159,14 @@ public class RunQAOnCurrentLayerAction extends AbstractAction {
                             "MapathonQA", JOptionPane.WARNING_MESSAGE);
                     }
 
+                    File historyFile = null;
+                    try { historyFile = HistoryLogger.appendRow(r); }
+                    catch (Exception ex) {
+                        JOptionPane.showMessageDialog(null,
+                            "Could not update history log:\n" + ex.getMessage(),
+                            "MapathonQA", JOptionPane.WARNING_MESSAGE);
+                    }
+
                     int total = r.totalIssues();
                     String nameInfo = (r.mapathonName != null && !r.mapathonName.trim().isEmpty())
                         ? r.mapathonName.trim() + "\n" : "";
@@ -186,7 +194,8 @@ public class RunQAOnCurrentLayerAction extends AbstractAction {
                         + "  Quality score:   " + String.format("%.0f", r.qualityScore())
                         + "% (" + r.qualityLabel() + ")\n\n"
                         + (total > 0 ? "Flagged objects are selected in the editor.\n" : "\u2713 No issues found!\n")
-                        + (reportFile != null ? "\nReport saved to:\n  " + reportFile.getAbsolutePath() : "");
+                        + (reportFile != null ? "\nReport saved to:\n  " + reportFile.getAbsolutePath() : "")
+                        + (historyFile != null ? "\nHistory log updated:\n  " + historyFile.getAbsolutePath() : "");
 
                     JOptionPane.showMessageDialog(null, summary, "MapathonQA \u2013 Results",
                         total == 0 ? JOptionPane.INFORMATION_MESSAGE : JOptionPane.WARNING_MESSAGE);

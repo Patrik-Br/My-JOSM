@@ -28,14 +28,16 @@ This produces `MapathonQA.jar` in the repo root — copy to JOSM's plugins folde
 | `MapathonQAPlugin.java` | Entry point, builds menu |
 | `RunFullQAAction.java` | Wizard: HOT TM API → task IDs → JOSM search query |
 | `RunQAOnCurrentLayerAction.java` | Runs all 7 checks with progress dialog, generates report |
-| `GenerateDemoReportAction.java` | Demo report with 314 simulated issues per check |
+| `GenerateDemoReportAction.java` | Demo report with realistic simulated issue counts across all 7 checks |
+| `SetReportFolderAction.java` | Lets the user override where HTML reports are saved (JOSM preference `mapathonqa.reportDir`) |
+| `HistoryLogger.java` | Appends one row per real QA run to a persistent `MapathonQA_history.csv` for tracking quality trends over time |
 | `CheckNonYesBuildingTagsAction.java` | Check 1: building ≠ yes |
 | `CheckOverlappingBuildingsAction.java` | Check 2: overlapping/contained buildings |
 | `CheckBuildingsOnHighwaysAction.java` | Check 3: buildings crossing roads |
 | `CheckNonOrthogonalBuildingsAction.java` | Check 4: non-square corners (matches mapathoner.jar algorithm exactly) |
 | `CheckBuildingLayerTagAction.java` | Check 5: buildings with layer=* tag |
 | `CheckBuildingsWithSharedNodesAction.java` | Check 6: shared nodes between buildings and other objects |
-| `CheckUntaggedWaysAction.java` | Check 7: untagged ways (excludes multipolygon members) |
+| `CheckUntaggedWaysAction.java` | Check 7: untagged objects — ways, plus standalone untagged nodes not used as a way vertex (multipolygon members excluded) |
 | `GeometryUtil.java` | Ray-casting, segment intersection, cos(lat) angle calc, time filter |
 | `QAResults.java` | Data container for all check results |
 | `ReportWriter.java` | Generates branded HTML report (MM logo embedded as base64 SVG) |
@@ -63,6 +65,17 @@ Task grid loaded via OpenLocationAction reflection (tries 3 method signatures fo
 - Missing Maps logo embedded as base64 SVG (passed as constant string `LOGO_URI`)
 - White header with MM logo + red bottom border
 - Meta strip, two summary cards, issues table, recommendations
-- Saved to ~/Downloads/ (falls back to Desktop, then home)
+- Saved to the folder configured via **MapathonQA → Set Report Save Folder...** (JOSM preference
+  `mapathonqa.reportDir`); if unset or invalid, falls back to ~/Downloads/, then Desktop, then home
 
 `ReportWriter.writeDemoReport(QAResults)` wraps `write()` and injects a blue demo banner.
+
+## History log
+
+`HistoryLogger.appendRow(QAResults)` appends one CSV row per real `Run QA on Current Layer`
+execution to `MapathonQA_history.csv`, in the same folder as HTML reports. The file is created
+with a header + UTF-8 BOM (so Excel renders it correctly) on first use, then only ever appended
+to — never overwritten — so a series of mapathons accumulates in one file that can be opened
+in Excel/Sheets to chart quality score, issue counts, etc. over time. Only wired into
+`RunQAOnCurrentLayerAction`, deliberately **not** called from `GenerateDemoReportAction` — demo
+runs use fake data and must not pollute the real history.
