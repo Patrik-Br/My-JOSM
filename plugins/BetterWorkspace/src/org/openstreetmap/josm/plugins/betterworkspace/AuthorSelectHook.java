@@ -26,7 +26,7 @@ import org.openstreetmap.josm.tools.Logging;
  */
 final class AuthorSelectHook {
 
-    private static final String MENU_TEXT_KEY = "Select objects";
+    private static final String MENU_TEXT_KEY = "Select objects - BetterWorkspace";
 
     private AuthorSelectHook() { }
 

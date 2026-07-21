@@ -53,7 +53,7 @@ extends Plugin {
         new RotateAction("betterworkspace:rotate-cw", I18n.tr((String)"Rotate view clockwise", (Object[])new Object[0]), "betterworkspace/rotate-cw", -15.0);
         new RotateAction("betterworkspace:rotate-ccw", I18n.tr((String)"Rotate view counter-clockwise", (Object[])new Object[0]), "betterworkspace/rotate-ccw", 15.0);
         new ResetAction();
-        this.arrangePanelsItem = MainApplication.getMenu().windowMenu.add((Action)new AbstractAction(I18n.tr((String)"Arrange side panels...", (Object[])new Object[0])){
+        this.arrangePanelsItem = MainApplication.getMenu().windowMenu.add((Action)new AbstractAction(I18n.tr((String)"Arrange side panels... - BetterWorkspace", (Object[])new Object[0])){
 
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
