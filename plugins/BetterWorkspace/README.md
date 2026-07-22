@@ -1,10 +1,25 @@
 # BetterWorkspace – JOSM Plugin
 
-Workspace tweaks for JOSM:
-- Rotate the whole map view (data + imagery) via toolbar buttons.
-- Arrange the docked side panels (**Windows → Arrange side panels...**), remembered across restarts.
-- Adds a **"Select objects"** entry to the right-click menu of JOSM's built-in **Authors** panel
-  (which otherwise only offers "Copy").
+Workspace tweaks for JOSM. All menu-driven features live under **More tools → BetterWorkspace**
+(each item is also a separate, shortcut-bindable, toolbar-registerable action — assign a key or add
+it to your toolbar via JOSM's own Preferences → Shortcuts / toolbar customization), in this order:
+- Arrange the docked side panels, remembered across restarts.
+- Load a HOT Tasking Manager project's task grid as a data layer — including **private and draft**
+  projects you have access to, not just public ones — via your personal TM API token.
+- Set/update that HOT TM API token.
+- Rotate the whole map view (data + imagery) clockwise/counter-clockwise, or reset it.
+
+**Note on "More tools":** that top-level menu isn't part of JOSM core's own default UI — core
+creates it empty and hidden (`MainMenu.initialize()` calls `moreToolsMenu.setVisible(false)`), and
+it only becomes visible in a stock JOSM because plugins like `utilsplugin2` or `buildings_tools`
+populate it. BetterWorkspace makes it visible itself, so the submenu appears whether or not those
+other plugins are installed. It attaches its own submenu via `SwingUtilities.invokeLater(...)`
+rather than directly in the plugin constructor, so it runs after every other plugin's own
+(synchronous) constructor-time menu setup — landing BetterWorkspace at the bottom of the list
+regardless of plugin load order.
+
+Separately, it also adds a **"Select objects"** entry to the right-click menu of JOSM's built-in
+**Authors** panel (which otherwise only offers "Copy").
 
 ## License
 
@@ -26,6 +41,27 @@ From within this `BetterWorkspace/` folder (needs JDK 17+):
    **Linux/Mac:** `./build.sh`
 
 This produces `BetterWorkspace.jar` in this folder — copy to JOSM's plugins folder and restart JOSM.
+
+## HOT Tasking Manager task grid loading (private/draft projects)
+
+JOSM's built-in **File → Open Location** can load a public TM project's task grid via
+`https://tasking-manager-production-api.hotosm.org/api/v2/projects/<id>/tasks/?as_file=true&format=geojson`,
+but that only works for public projects — the TM API returns HTTP 403 for private or draft
+projects even if you have access, since Open Location has no way to send an `Authorization` header.
+
+**Set HOT TM API Token...** and **Load HOT TM Task Grid...** (both under More tools →
+BetterWorkspace) work around that:
+
+- Get your personal token from the TM website: **tasks.hotosm.org → Settings → enable "Expert
+  mode" → API Key** card. It's stored via JOSM's own preferences (`Config.getPref()`), the same
+  mechanism JOSM uses for its own OSM OAuth token.
+- The token expires roughly 7 days after your last TM login (confirmed against the TM backend's
+  `login_required` check, `hotosm/tasking-manager` on GitHub) — re-copy it periodically.
+- **Load HOT TM Task Grid...** fetches `GET /projects/<id>/tasks/?as_file=true&format=geojson`
+  itself via `HttpURLConnection`, attaching `Authorization: Token <token>` when a token is set, then
+  parses the response with JOSM's own `org.openstreetmap.josm.io.GeoJSONReader.parseDataSet(...)`
+  and adds it as a new `OsmDataLayer` — this works for public projects too (no token needed), so
+  it's a drop-in replacement for the Ctrl+L workflow either way.
 
 ## The Authors-panel "Select objects" hook
 

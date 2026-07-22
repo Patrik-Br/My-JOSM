@@ -21,9 +21,10 @@ package org.openstreetmap.josm.plugins.betterworkspace;
 
 import java.awt.Container;
 import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
+import java.awt.event.KeyEvent;
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import org.openstreetmap.josm.actions.JosmAction;
 import org.openstreetmap.josm.data.coor.EastNorth;
@@ -40,6 +41,7 @@ import org.openstreetmap.josm.plugins.betterworkspace.RotatingProjection;
 import org.openstreetmap.josm.plugins.panelorder.ArrangePanelsDialog;
 import org.openstreetmap.josm.plugins.panelorder.PanelReorderer;
 import org.openstreetmap.josm.tools.I18n;
+import org.openstreetmap.josm.tools.ImageProvider;
 import org.openstreetmap.josm.tools.Logging;
 import org.openstreetmap.josm.tools.Shortcut;
 
@@ -50,21 +52,35 @@ extends Plugin {
 
     public BetterWorkspacePlugin(PluginInformation pluginInformation) {
         super(pluginInformation);
-        new RotateAction("betterworkspace:rotate-cw", I18n.tr((String)"Rotate view clockwise", (Object[])new Object[0]), "betterworkspace/rotate-cw", -15.0);
-        new RotateAction("betterworkspace:rotate-ccw", I18n.tr((String)"Rotate view counter-clockwise", (Object[])new Object[0]), "betterworkspace/rotate-ccw", 15.0);
-        new ResetAction();
-        this.arrangePanelsItem = MainApplication.getMenu().windowMenu.add((Action)new AbstractAction(I18n.tr((String)"Arrange side panels... - BetterWorkspace", (Object[])new Object[0])){
+        RotateAction rotateCw = new RotateAction("betterworkspace:rotate-cw", I18n.tr((String)"Rotate view clockwise", (Object[])new Object[0]), "betterworkspace/rotate-cw", -15.0);
+        RotateAction rotateCcw = new RotateAction("betterworkspace:rotate-ccw", I18n.tr((String)"Rotate view counter-clockwise", (Object[])new Object[0]), "betterworkspace/rotate-ccw", 15.0);
+        ResetAction reset = new ResetAction();
+        ArrangePanelsAction arrangePanels = new ArrangePanelsAction();
 
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                MapFrame mapFrame = MainApplication.getMap();
-                if (mapFrame == null) {
-                    return;
-                }
-                new ArrangePanelsDialog(mapFrame).showAndApply(mapFrame);
-            }
+        JMenu bwMenu = new JMenu(I18n.tr((String)"BetterWorkspace", (Object[])new Object[0]));
+        bwMenu.setIcon(new ImageProvider("betterworkspace/betterworkspace").get());
+        this.arrangePanelsItem = bwMenu.add(arrangePanels);
+        bwMenu.addSeparator();
+        bwMenu.add(new LoadTmTaskGridAction());
+        bwMenu.add(new SetTmApiTokenAction());
+        bwMenu.addSeparator();
+        bwMenu.add(rotateCw);
+        bwMenu.add(rotateCcw);
+        bwMenu.add(reset);
+
+        // Deferred: JOSM core creates "More tools" empty and hidden (MainMenu.initialize()
+        // calls moreToolsMenu.setVisible(false)) - it only becomes visible in practice
+        // because plugins like utilsplugin2/buildings_tools populate it. Attaching here via
+        // invokeLater (instead of directly, now, in the constructor) means our submenu is
+        // added only after every plugin's own (synchronous) constructor-time menu setup has
+        // already run, so BetterWorkspace reliably lands at the bottom of the list, and we
+        // explicitly show the menu ourselves so it still works with neither of those plugins
+        // installed.
+        SwingUtilities.invokeLater(() -> {
+            JMenu moreTools = MainApplication.getMenu().moreToolsMenu;
+            moreTools.add(bwMenu);
+            moreTools.setVisible(true);
         });
-        this.arrangePanelsItem.setToolTipText(I18n.tr((String)"Change the top-to-bottom order of the panels docked on the right side", (Object[])new Object[0]));
     }
 
     public void mapFrameInitialized(MapFrame mapFrame, MapFrame mapFrame2) {
@@ -153,6 +169,25 @@ extends Plugin {
 
         public void actionPerformed(ActionEvent actionEvent) {
             BetterWorkspacePlugin.applyRotation(0.0);
+        }
+    }
+
+    private static final class ArrangePanelsAction
+    extends JosmAction {
+        ArrangePanelsAction() {
+            super(I18n.tr((String)"Arrange side panels...", (Object[])new Object[0]), "betterworkspace/arrange-panels",
+                    I18n.tr((String)"Change the top-to-bottom order of the panels docked on the right side", (Object[])new Object[0]),
+                    Shortcut.registerShortcut("betterworkspace:arrangepanels",
+                            I18n.tr((String)"Arrange side panels...", (Object[])new Object[0]), (int)KeyEvent.CHAR_UNDEFINED, Shortcut.NONE),
+                    true, "betterworkspace:arrangepanels", false);
+        }
+
+        public void actionPerformed(ActionEvent actionEvent) {
+            MapFrame mapFrame = MainApplication.getMap();
+            if (mapFrame == null) {
+                return;
+            }
+            new ArrangePanelsDialog(mapFrame).showAndApply(mapFrame);
         }
     }
 }

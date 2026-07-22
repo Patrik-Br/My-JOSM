@@ -8,7 +8,8 @@ if not exist lib\josm-tested.jar (
     exit /b 1
 )
 
-if not exist build mkdir build
+if exist build rmdir /s /q build
+mkdir build
 xcopy /s /e /i /y images build\images >nul
 
 echo Compiling...

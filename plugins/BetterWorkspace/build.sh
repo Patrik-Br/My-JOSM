@@ -9,6 +9,7 @@ if [ ! -f lib/josm-tested.jar ]; then
     exit 1
 fi
 
+rm -rf build
 mkdir -p build
 cp -r images build/images
 
